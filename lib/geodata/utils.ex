@@ -1,4 +1,5 @@
 defmodule Geodata.Utils do
+  alias Geodata.Archives
   alias Geodata.Countries
 
   @doc """
@@ -19,7 +20,7 @@ defmodule Geodata.Utils do
   defp archive_exists?(archive) do
     cond do
       is_valid_country_archive?(archive) -> true
-      archive in Geodata.keys() -> true
+      archive in Archives.keys() -> true
       true -> false
     end
   end
