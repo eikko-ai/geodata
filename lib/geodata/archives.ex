@@ -1,9 +1,11 @@
 defmodule Geodata.Archives do
   import Geodata.Utils
+  alias Geodata.Request
+  # import Geodata.Parser, only: [tsv_parse_string: 1]
 
   @base_url "http://download.geonames.org"
 
-  def archives do
+  defp archives do
     [
       country_XX: %{
         schema: "GeoName",
@@ -75,7 +77,7 @@ defmodule Geodata.Archives do
         filename: "timeZones.txt",
         description: "GMT, DST and Raw offsets"
       },
-      country_info: %{
+      countries: %{
         schema: "GeoCountry",
         filename: "countryInfo.txt",
         description: "Country information"
@@ -100,9 +102,27 @@ defmodule Geodata.Archives do
   end
 
   @doc """
+  Returns a list with all the available geonames archives
+  """
+  def all() do
+    archives()
+  end
+
+  @doc """
   All archive keys
   """
   def keys, do: archives() |> Keyword.keys()
+
+  def fetch(archive) do
+    archive
+    |> url()
+    |> fetch_file()
+  end
+
+  defp fetch_file(url) do
+    %{body: data} = Request.get!(url)
+    data
+  end
 
   @doc """
   Get the full url for the given archive

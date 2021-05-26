@@ -7,6 +7,12 @@ defmodule Geodata.Countries do
   Country data file is located in `priv/data/countries.json`.
   """
 
+  require Logger
+
+  import Geodata.Parser
+  alias Geodata.Request
+  alias Geodata.Country
+
   @url "http://download.geonames.org/export/dump/countryInfo.txt"
   @data_file "priv/data/countries.csv"
 
@@ -16,10 +22,6 @@ defmodule Geodata.Countries do
     SI SK SE)a
 
   @efta_members ~w(CH IS LI NO)a
-
-  import Geodata.Parser
-  alias Geodata.Request
-  alias Geodata.Country
 
   @doc """
   Returns a list with all the countries ISO codes
@@ -106,8 +108,23 @@ defmodule Geodata.Countries do
     |> then(&File.write!(data_path(), &1))
   end
 
-  defp fetch_file(@url) do
-    %{body: data} = Request.get!(@url)
+  defp fetch_file(url) do
+    %{body: data, status: status} = Request.get!(url)
+
+    cond do
+      status >= 200 && status <= 299 ->
+        Logger.info("\nCountry data downloaded.")
+
+      status == 304 ->
+        Logger.info("\nCached: Country data hasn't changed.")
+
+      status >= 400 ->
+        Logger.error("\nError downloading data.")
+
+      true ->
+        Logger.error("\nError downloading data.")
+    end
+
     data
   end
 
