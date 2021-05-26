@@ -7,8 +7,6 @@ defmodule Geodata.Countries do
   Country data file is located in `priv/data/countries.json`.
   """
 
-  require Logger
-
   import Geodata.Parser
   alias Geodata.Request
   alias Geodata.Country
@@ -101,31 +99,19 @@ defmodule Geodata.Countries do
   Update the country data file.
   """
   def update() do
-    @url
-    |> fetch_file()
+    {status, data} = fetch_file(@url)
+
+    data
     |> tsv_parse_string()
     |> tsv_dump()
     |> then(&File.write!(data_path(), &1))
+
+    status
   end
 
   defp fetch_file(url) do
     %{body: data, status: status} = Request.get!(url)
-
-    cond do
-      status >= 200 && status <= 299 ->
-        Logger.info("\nCountry data downloaded.")
-
-      status == 304 ->
-        Logger.info("\nCached: Country data hasn't changed.")
-
-      status >= 400 ->
-        Logger.error("\nError downloading data.")
-
-      true ->
-        Logger.error("\nError downloading data.")
-    end
-
-    data
+    {status, data}
   end
 
   defp data_path do
